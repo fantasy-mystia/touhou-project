@@ -3,315 +3,130 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>高校车万例会Staff六维成分测试</title>
+    <title>测一测你办车万例会像哪一个车万角色？</title>
+    <!-- 引入必要的依赖库 -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { background-color: #f3f4f6; font-family: sans-serif; }
-        .fade-enter-active, .fade-leave-active { transition: opacity 0.3s; }
-        .fade-enter-from, .fade-leave-to { opacity: 0; }
+        body { background-color: #f3f4f6; font-family: 'Microsoft YaHei', sans-serif; }
+        .bg-pattern { background-image: radial-gradient(#cbd5e1 1px, transparent 1px); background-size: 20px 20px; }
+        [v-cloak] { display: none; } /* 防止页面加载瞬间闪烁乱码 */
     </style>
 </head>
-<body>
-<div id="app" class="min-h-screen flex items-center justify-center p-4">
-    <div class="bg-white rounded-xl shadow-lg w-full max-w-2xl p-6 md:p-8">
+<body class="bg-pattern">
+<div id="app" v-cloak class="min-h-screen flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden min-h-[400px] flex flex-col relative">
         
-        <!-- 欢迎页 -->
-        <div v-if="step === 'start'" class="text-center">
-            <h1 class="text-2xl font-bold mb-4 text-gray-800">高校车万例会Staff六维成分测试</h1>
-            <p class="text-gray-600 mb-6 text-left">
-                说明：本测试共60题，六个维度。请根据您组织/参与高校东方例会的真实想法进行选择。<br>
-                测试结束后，将生成您的六维成分代码。
-            </p>
-            <button @click="startTest" class="bg-blue-600 text-white px-8 py-3 rounded-lg font-bold hover:bg-blue-700 transition">开始测试</button>
+        <!-- 状态1：等待异步拉取 JSON 数据 (显示加载动画) -->
+        <div v-if="step === 'start' && questions.length === 0" class="flex-1 flex flex-col items-center justify-center p-12 text-gray-500">
+            <svg class="animate-spin h-10 w-10 text-red-600 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <p class="text-lg font-bold animate-pulse">正在连接幻想乡数据库...</p>
         </div>
 
-        <!-- 答题页 -->
-        <div v-if="step === 'testing'">
-            <div class="flex justify-between text-sm text-gray-500 mb-4">
+        <!-- 状态2：欢迎页 (数据加载完毕后显示) -->
+        <div v-else-if="step === 'start' && questions.length > 0" class="p-8 text-center flex-1 flex flex-col justify-center">
+            <h1 class="text-3xl font-black mb-4 text-gray-800 tracking-wide">测一测你办车万例会<br><span class="text-red-600">像哪一个车万角色？</span></h1>
+            <p class="text-gray-600 mb-8 text-left leading-relaxed">
+                说明：本测试共60题，涵盖资金、管理、外交、内容等六大维度。<br>
+                请根据你在高校东方例会中的真实想法进行选择。测试结束后，将为你生成专属的<strong>例会角色面板</strong>与<strong>能力雷达图</strong>。
+            </p>
+            <div>
+                <button @click="startTest" class="bg-red-600 text-white px-10 py-4 rounded-full font-bold text-lg hover:bg-red-700 transition shadow-lg hover:shadow-red-500/50">开始测试</button>
+            </div>
+        </div>
+
+        <!-- 状态3：答题页 -->
+        <div v-if="step === 'testing'" class="p-8 flex-1">
+            <div class="flex justify-between text-sm text-gray-400 mb-4 font-mono">
                 <span>进度: {{ currentIndex + 1 }} / {{ questions.length }}</span>
-                <span>ID: {{ currentQuestion.id }}</span>
             </div>
             
-            <div class="h-2 w-full bg-gray-200 rounded-full mb-6">
-                <div class="h-2 bg-blue-600 rounded-full transition-all" :style="{ width: ((currentIndex + 1) / questions.length * 100) + '%' }"></div>
+            <div class="h-2 w-full bg-gray-100 rounded-full mb-8">
+                <div class="h-2 bg-red-500 rounded-full transition-all duration-300" :style="{ width: ((currentIndex + 1) / questions.length * 100) + '%' }"></div>
             </div>
 
-            <h2 class="text-xl font-semibold mb-8 text-gray-800 min-h-[4rem]">
+            <h2 class="text-xl font-bold mb-8 text-gray-800 min-h-[5rem] leading-relaxed">
                 {{ currentQuestion.text }}
             </h2>
 
             <div class="flex flex-col space-y-3">
                 <button v-for="opt in options" :key="opt.value" 
                         @click="selectOption(opt.value)"
-                        class="w-full text-left px-4 py-3 rounded border border-gray-300 hover:bg-blue-50 hover:border-blue-500 transition">
+                        class="w-full text-left px-5 py-4 rounded-xl border-2 border-gray-100 hover:bg-red-50 hover:border-red-400 transition font-medium text-gray-700">
                     {{ opt.label }}
                 </button>
             </div>
 
             <div class="mt-8 flex justify-between">
                 <button @click="prevQuestion" :disabled="currentIndex === 0" 
-                        class="text-blue-600 px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                        class="text-gray-400 hover:text-red-500 font-medium px-4 py-2 disabled:opacity-30 disabled:cursor-not-allowed transition">
                     &larr; 返回上一题
                 </button>
             </div>
         </div>
 
-        <!-- 结果页 -->
-        <div v-if="step === 'result'" class="text-center">
-            <h2 class="text-2xl font-bold mb-2 text-gray-800">测试完成！</h2>
-            <p class="text-gray-600 mb-6">您的六维成分结果为：</p>
-            
-            <div class="text-5xl font-black text-blue-600 mb-8 tracking-widest">
-                {{ finalResult }}
+        <!-- 状态4：结果页 -->
+        <div v-if="step === 'result'" class="bg-gray-50 flex-1">
+            <!-- 角色展示区 -->
+            <div class="bg-gradient-to-br from-red-600 to-red-900 text-white p-8 text-center relative overflow-hidden">
+                <div class="text-red-200 font-bold tracking-widest text-sm mb-2">成分代码: {{ finalResultCode }}</div>
+                <h2 class="text-3xl font-black mb-1">{{ matchedCharacter.title }}</h2>
+                <h3 class="text-2xl font-bold mb-6 opacity-90">—— {{ matchedCharacter.name }} ——</h3>
+                
+                <!-- 角色头像区 (加了防崩处理，如果没配图显示占位符) -->
+                <div class="w-40 h-40 mx-auto rounded-full border-4 border-white shadow-2xl overflow-hidden bg-white mb-6 flex items-center justify-center">
+                    <img v-if="matchedCharacter.img" :src="matchedCharacter.img" alt="角色图片" class="w-full h-full object-cover">
+                    <span v-else class="text-gray-400 text-sm font-bold">暂无画像</span>
+                </div>
+                
+                <div class="italic text-lg font-serif opacity-90 px-4">
+                    “{{ matchedCharacter.quote }}”
+                </div>
             </div>
 
-            <p v-if="isNeutral" class="text-red-500 font-bold mb-4">
-                检测到四个及以上维度处于零分边界，您被判定为：中立者
-            </p>
+            <div class="p-8">
+                <!-- 雷达图容器 (交给 JS 里的 Chart.js 渲染) -->
+                <div class="w-full max-w-md mx-auto mb-8 relative">
+                    <canvas id="radarChart"></canvas>
+                </div>
 
-            <button @click="submitData" :disabled="isSubmitting" class="bg-green-600 text-white px-8 py-3 rounded-lg font-bold hover:bg-green-700 transition">
-                {{ isSubmitting ? '保存数据中...' : '提交并保存我的结果' }}
-            </button>
-            <p v-if="submitMessage" class="mt-4 text-sm text-gray-600">{{ submitMessage }}</p>
+                <!-- 文字解读区 -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 mb-8">
+                    <h4 class="font-bold text-gray-800 mb-3 flex items-center">
+                        <span class="bg-red-100 text-red-600 px-2 py-1 rounded text-sm mr-2">解读</span>你的组织风格：
+                    </h4>
+                    <p class="text-gray-600 text-sm leading-relaxed whitespace-pre-line">
+                        {{ matchedCharacter.desc }}
+                    </p>
+                    <!-- 中立者特殊提示 -->
+                    <p v-if="isNeutral" class="mt-4 text-sm font-bold text-yellow-600">
+                        * 检测到你在多项维度上持中立态度，系统已自动指派特殊的平衡侧角色。
+                    </p>
+                </div>
+
+                <!-- 提交按钮区 -->
+                <div class="text-center border-t border-gray-200 pt-6">
+                    <button @click="submitData" :disabled="isSubmitting || isSubmitted" 
+                            :class="isSubmitted ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'"
+                            class="text-white px-8 py-3 rounded-xl font-bold transition shadow-lg w-full md:w-auto">
+                        {{ submitBtnText }}
+                    </button>
+                    <p v-if="submitMessage" class="mt-3 text-sm font-medium" :class="isSubmitted ? 'text-green-600' : 'text-gray-500'">
+                        {{ submitMessage }}
+                    </p>
+                </div>
+            </div>
         </div>
 
     </div>
 </div>
 
-<script>
-const { createApp, ref, computed } = Vue;
-
-// 题目数据库（包含了你提供的所有题目，这里只列出了一部分作为示例。我已经写好了结构，你只需把剩下的按格式填入即可）
-// pole=1 代表正极(B/A/U/H/R/W)，pole=-1 代表负极(D/C/I/E/T/P)。 OTHER计分不影响。
-const rawQuestions = [
-    // ================= 维度一：BD (商业/现实 vs 同人/纯粹) =================
-    { id: 15, text: "如果缺乏经费，可以进行众筹来举办自己学校的车万例会", dim: "BD", pole: 1 },
-    { id: 21, text: "在举办高校例会时获取一定利润，并用于补贴成本是完全合理的", dim: "BD", pole: 1 },
-    { id: 29, text: "应当给予策划组成员一定的物质报酬", dim: "BD", pole: 1 },
-    { id: 73, text: "能拉到商业社团的支援的例会比纯粹校内同好自嗨的例会更高级", dim: "BD", pole: 1 },
-    { id: 8, text: "在学校内举办的例会应当拒绝一切外部商业社团合作", dim: "BD", pole: -1 },
-    { id: 30, text: "接受商业社团的赞助是不可容忍的", dim: "BD", pole: -1 },
-    { id: 35, text: "在校内活动内提供任何服务都不应该主动索取物质报酬", dim: "BD", pole: -1 },
-    { id: 44, text: "Staff既然选择加入策划组，就该无偿为本校的例会贡献产出", dim: "BD", pole: -1 },
-    { id: 45, text: "在高校例会中，画师按照商业标准索要稿费，是有违‘同人精神’的", dim: "BD", pole: -1 },
-
-    // ================= 维度二：AC (集权/效率 vs 民主/共识) =================
-    { id: 5, text: "更有效率的筹划模式（如KPI考核）能够举办更优秀的高校例会", dim: "AC", pole: 1 },
-    { id: 19, text: "在例会的筹备过程中需要一个强势的主催来拍板决定各项事务", dim: "AC", pole: 1 },
-    { id: 23, text: "例会策划组应该有足够的强制力维护现场秩序", dim: "AC", pole: 1 },
-    { id: 26, text: "在例会的筹备和执行中，必须要把时间管理放在优先级很高的位置", dim: "AC", pole: 1 },
-    { id: 27, text: "当例会策划组成员拖延了例会筹备的进度，TA应该付出代价", dim: "AC", pole: 1 },
-    { id: 63, text: "统一组织的例会节目比自发的例会节目更优质", dim: "AC", pole: 1 },
-    { id: 24, text: "例会策划组的任何决定应该由全体策划组成员达成共识", dim: "AC", pole: -1 },
-    { id: 58, text: "主催的角色更应该是协调者而不是管理者", dim: "AC", pole: -1 },
-    { id: 56, text: "理想中的例会策划组里不需要主催岗", dim: "AC", pole: -1 },
-
-    // ================= 维度三：UI (联合/开放 vs 独立/本校本位) =================
-    { id: 6, text: "当本校无法申请到场地举办例会时，可以尝试与其他学校合办例会", dim: "UI", pole: 1 },
-    { id: 7, text: "有条件合办例会的学校对于别的学校的合办例会的申请应当欣然接受", dim: "UI", pole: 1 },
-    { id: 12, text: "本校例会的核心管理层完全可以由能力强的外校人士担任", dim: "UI", pole: 1 },
-    { id: 39, text: "高校联合举办例会比单独举办例会更有意义", dim: "UI", pole: 1 },
-    { id: 42, text: "如果一个学校的社群有余力，应该帮助其他学校举办东方例会", dim: "UI", pole: 1 },
-    { id: 47, text: "地区高校联合组织有利于当地高校车万社群的发展", dim: "UI", pole: 1 },
-    { id: 40, text: "例会节目报名应该优先照顾本校同学", dim: "UI", pole: -1 },
-    { id: 46, text: "组织本校例会没必要考虑当地其他学校例会的档期", dim: "UI", pole: -1 },
-    { id: 48, text: "帮助其他高校的东方社群完全是浪费精力", dim: "UI", pole: -1 },
-
-    // ================= 维度四：HE (企划/硬核 vs 娱乐/大众) =================
-    { id: 9, text: "优秀的例会必须有严密的剧情和企划逻辑，所有的节目和环节都应当融入这个“世界观”中", dim: "HE", pole: 1 },
-    { id: 60, text: "即使例会常年缺人缺钱，也绝不能使用AI工具来产出物料或例会内容", dim: "HE", pole: 1 },
-    { id: 52, text: "把例会的自由度交给观众是糟糕透顶的行为", dim: "HE", pole: 1 },
-    { id: 11, text: "高校例会没有主视觉图是可以接受的", dim: "HE", pole: -1 },
-    { id: 17, text: "只要场下观众开心，哪怕台上的节目演出很糟糕也无所谓", dim: "HE", pole: -1 },
-    { id: 18, text: "高校例会的节目和梗应该照顾刚接触东方的新人，不该有过高的知识门槛", dim: "HE", pole: -1 },
-    { id: 25, text: "例会策划组不应该拒绝任何车万同好参加自己的例会", dim: "HE", pole: -1 },
-    { id: 36, text: "例会内容更应该取悦观众而非取悦策划", dim: "HE", pole: -1 },
-    { id: 55, text: "如果大部分人喜欢看烂梗，例会策划组就应该迎合这种‘多数人的需求’", dim: "HE", pole: -1 },
-
-    // ================= 维度五：RT (反叛/革新 vs 顺从/传统) =================
-    { id: 3, text: "高校东方活动的核心组织团队应当一年左右更换一次", dim: "RT", pole: 1 },
-    { id: 28, text: "为了确保例会的落地，对高校官方进行适当的隐瞒是合情合理的", dim: "RT", pole: 1 },
-    { id: 41, text: "例会最好脱离本校动漫社乃至脱离学校本身，来换取例会筹备的自主性", dim: "RT", pole: 1 },
-    { id: 43, text: "已毕业的本校东方社群成员的意见无足轻重", dim: "RT", pole: 1 },
-    { id: 62, text: "当老一辈Staff的理念被证明已经过时且固执己见时，他们该滚蛋", dim: "RT", pole: 1 },
-    { id: 72, text: "学校动漫社碍着我办东方例会了", dim: "RT", pole: 1 },
-    { id: 22, text: "例会策划组应该存在有丰富例会策划经验的前辈作为顾问", dim: "RT", pole: -1 },
-    { id: 61, text: "在吸收例会策划组新鲜血液时，新人有义务继承本校特色的传统与规矩", dim: "RT", pole: -1 },
-    { id: 65, text: "感觉过去东方社群的氛围比现在好", dim: "RT", pole: -1 },
-
-    // ================= 维度六：WP (事业/成就 vs 情感/聚会) =================
-    { id: 16, text: "我希望通过举办高质量的例会，在高校车万圈内获得较高的知名度和认可度", dim: "WP", pole: 1 },
-    { id: 34, text: "我想办例会的主要原因就是看到别的学校也办了例会", dim: "WP", pole: 1 },
-    { id: 37, text: "一个学校东方社群的价值应该由自己学校东方例会的完成度来衡量", dim: "WP", pole: 1 },
-    { id: 38, text: "为了举办东方例会，我愿意牺牲一部分个人生活", dim: "WP", pole: 1 },
-    { id: 32, text: "我觉得车万人聚在一起玩的活动就叫车万活动", dim: "WP", pole: -1 },
-    { id: 33, text: "我其实根本不喜欢办例会，我只想和车万人同学一起玩", dim: "WP", pole: -1 },
-    { id: 54, text: "不管我的个人意见如何，重要的是和本校东方社群保持一致", dim: "WP", pole: -1 },
-    { id: 57, text: "如果策划组内不能建立起深刻的友情，例会再好也是缺乏灵魂的", dim: "WP", pole: -1 },
-    { id: 64, text: "我认为办东方例会的风气正在破坏高校东方社群", dim: "WP", pole: -1 },
-
-    // ================= 维度七：其他 (这些题没有实际打分作用，纯调查) =================
-    { id: 74, text: "例会策划组应该为例会游客群管理的发言负责", dim: "OTHER", pole: 0 },
-    { id: 1, text: "高校例会的内容一定要能体现出这个高校的特色，而非仅有单纯的东方内容", dim: "OTHER", pole: 0 },
-    { id: 31, text: "比起取悦同好，我更希望借高校例会让更多的圈外人了解东方project", dim: "OTHER", pole: 0 },
-    { id: 10, text: "在与例会内部的策划成员交流的时候，我更愿意尊称对方为“老师”", dim: "OTHER", pole: 0 },
-    { id: 49, text: "我所参与组织的高校例会是最好的高校例会", dim: "OTHER", pole: 0 },
-    { id: 66, text: "为了例会的长远存续，哪怕彻底牺牲例会的节目效果也在所不惜", dim: "OTHER", pole: 0 }
-];
-
-// 利用固定种子进行伪随机打乱（保证每次刷新顺序都是固定的乱序）
-function seededShuffle(array, seed = 114514) {
-    let m = array.length, t, i;
-    while (m) {
-        seed = (seed * 9301 + 49297) % 233280;
-        i = Math.floor((seed / 233280) * m--);
-        t = array[m];
-        array[m] = array[i];
-        array[i] = t;
-    }
-    return array;
-}
-
-createApp({
-    setup() {
-        const step = ref('start'); // start, testing, result
-        const questions = ref(seededShuffle([...rawQuestions]));
-        const currentIndex = ref(0);
-        const answers = ref([]); // 记录每道题的选择
-        const finalResult = ref('');
-        const isNeutral = ref(false);
-        const isSubmitting = ref(false);
-        const submitMessage = ref('');
-
-        const options = [
-            { label: "非常符合", value: 2 },
-            { label: "比较符合", value: 1 },
-            { label: "中立", value: 0 },
-            { label: "不太符合", value: -1 },
-            { label: "非常不符合", value: -2 }
-        ];
-
-        const currentQuestion = computed(() => questions.value[currentIndex.value]);
-
-        const startTest = () => {
-            step.value = 'testing';
-        };
-
-        const selectOption = (value) => {
-            answers.value[currentIndex.value] = {
-                id: currentQuestion.value.id,
-                dim: currentQuestion.value.dim,
-                pole: currentQuestion.value.pole,
-                score: value,
-                text: currentQuestion.value.text
-            };
-            
-            if (currentIndex.value < questions.value.length - 1) {
-                currentIndex.value++;
-            } else {
-                calculateResult();
-            }
-        };
-
-        const prevQuestion = () => {
-            if (currentIndex.value > 0) currentIndex.value--;
-        };
-
-        const calculateResult = () => {
-            let dimScores = { BD: 0, AC: 0, UI: 0, HE: 0, RT: 0, WP: 0 };
-            
-            // 计算总分
-            answers.value.forEach(ans => {
-                if (ans.dim !== 'OTHER') {
-                    dimScores[ans.dim] += ans.score * ans.pole;
-                }
-            });
-
-            let resultStr = "";
-            let zeroCount = 0;
-
-            // 判断维度一：BD (0分默认同人D)
-            if (dimScores.BD > 0) resultStr += "B";
-            else if (dimScores.BD < 0) resultStr += "D";
-            else { resultStr += "D"; zeroCount++; }
-
-            // 判断维度二：AC (0分默认民主C)
-            if (dimScores.AC > 0) resultStr += "A";
-            else if (dimScores.AC < 0) resultStr += "C";
-            else { resultStr += "C"; zeroCount++; }
-
-            // 判断维度三：UI (0分默认独立I)
-            if (dimScores.UI > 0) resultStr += "U";
-            else if (dimScores.UI < 0) resultStr += "I";
-            else { resultStr += "I"; zeroCount++; }
-
-            // 判断维度四：HE (0分默认娱乐E)
-            if (dimScores.HE > 0) resultStr += "H";
-            else if (dimScores.HE < 0) resultStr += "E";
-            else { resultStr += "E"; zeroCount++; }
-
-            // 判断维度五：RT (0分默认传统T)
-            if (dimScores.RT > 0) resultStr += "R";
-            else if (dimScores.RT < 0) resultStr += "T";
-            else { resultStr += "T"; zeroCount++; }
-
-            // 判断维度六：WP (0分默认情感P)
-            if (dimScores.WP > 0) resultStr += "W";
-            else if (dimScores.WP < 0) resultStr += "P";
-            else { resultStr += "P"; zeroCount++; }
-
-            // 判断是否为中立者
-            if (zeroCount >= 4) {
-                isNeutral.value = true;
-                finalResult.value = "中立者";
-            } else {
-                isNeutral.value = false;
-                finalResult.value = resultStr;
-            }
-
-            step.value = 'result';
-        };
-
-        const submitData = async () => {
-            isSubmitting.value = true;
-            submitMessage.value = "正在上传您的结果...";
-            
-            // 准备发送到后台的数据
-            const payload = {
-                result: finalResult.value,
-                isNeutral: isNeutral.value,
-                timestamp: new Date().toISOString(),
-                // 这里可以把原始选项也传上去，方便日后分析
-                answers: JSON.stringify(answers.value)
-            };
-
-            // 【注意】请将下面的URL替换为你自己的后端/Webhook地址！
-            const WEBHOOK_URL = "https://savesurvey-wdzwrthfoe.cn-hangzhou.fcapp.run";
-
-            try {
-                // 发送数据到后台
-                const response = await fetch(WEBHOOK_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                
-                if (response.ok) {
-                    submitMessage.value = "保存成功！感谢您的参与！";
-                } else {
-                    submitMessage.value = "保存失败，请稍后重试。";
-                }
-            } catch (error) {
-                submitMessage.value = "网络错误，未能保存。";
-            } finally {
-                isSubmitting.value = false;
-            }
-        };
-
-        return { step, questions, currentIndex, currentQuestion, options, finalResult, isNeutral, startTest, selectOption, prevQuestion, submitData, isSubmitting, submitMessage };
-    }
-}).mount('#app');
-</script>
+<!-- 引入外置的核心逻辑文件 -->
+<!-- 确保你的文件夹结构是：根目录下有 index.html 和 js 文件夹，js 文件夹里有 app.js -->
+<script src="./js/app.js"></script>
 </body>
 </html>
