@@ -204,7 +204,7 @@ createApp({
             try {
                 const element = document.getElementById('result-card');
                 const canvas = await html2canvas(element, {
-                    scale: 2,
+                    scale: 1.5,
                     useCORS: true,
                     backgroundColor: '#f9fafb'
                 });
