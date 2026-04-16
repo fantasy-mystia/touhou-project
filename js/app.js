@@ -165,7 +165,7 @@ createApp({
             };
 
             // 【务必填写你的阿里云函数公网地址】
-            const WEBHOOK_URL = "https://save-survey-xxxxxx.cn-hangzhou.fcapp.run";
+            const WEBHOOK_URL = "https://savesurvey-wdzwrthfoe.cn-hangzhou.fcapp.run";
 
             // Fire and forget: 发出请求即可，不等待结果，不处理报错，不在界面显示
             fetch(WEBHOOK_URL, {
