@@ -113,7 +113,7 @@
                     <div class=”text-red-200 font-bold tracking-widest text-xs mb-1”>你的例会成分代码：{{ finalResultCode }}</div>
                     <h2 class=”text-xl font-black mb-0.5”>{{ matchedCharacter.title }}</h2>
                     <h3 class=”text-lg font-bold mb-3 opacity-90”>—— {{ matchedCharacter.name }} ——</h3>
-                    <div class=”w-28 h-28 mx-auto rounded-full border-3 border-white shadow-xl overflow-hidden bg-white mb-3”>
+                    <div class=”w-28 h-28 mx-auto rounded-full border-2 border-white shadow-xl overflow-hidden bg-white mb-3”>
                         <img :src=”matchedCharacter.img” alt=”角色图片” class=”w-full h-full object-cover”>
                     </div>
                     <div class=”italic text-sm font-serif opacity-90 px-2”>”{{ matchedCharacter.quote }}”</div>
@@ -157,6 +157,12 @@
             </div>
         </div>
 
+    </div>
+
+    <!-- 生成中加载蒙层 -->
+    <div v-if="isDownloading" class="fixed inset-0 bg-black/60 z-50 flex flex-col items-center justify-center">
+        <div class="w-10 h-10 border-4 border-white/30 border-t-white rounded-full animate-spin mb-4"></div>
+        <p class="text-white text-lg font-bold">正在生成海报...</p>
     </div>
 
     <!-- 图片预览蒙层：手机端长按保存，PC端可点击下载 -->
