@@ -110,8 +110,11 @@
             <!-- 【核心保存区域】id为result-card，用于一键截图 -->
             <div id="result-card" class="bg-gray-50 pb-3" style="max-width: 420px; margin: 0 auto;">
                 <div class="bg-gradient-to-br from-red-600 to-red-900 text-white p-5 text-center relative overflow-hidden">
-                    <div class="text-red-200 font-bold tracking-widest text-xs mb-1">你的例会成分代码：{{ finalResultCode }}</div>
-                    <h2 class="text-xl font-black mb-0.5">{{ matchedCharacter.title }}</h2>
+                    <div class="text-red-200 font-bold tracking-widest text-xs mb-3">你的例会组织风格代码：{{ finalResultCode }}</div>
+                    
+                    <div class="text-sm font-medium text-red-100 mb-1 tracking-wide opacity-90">你办车万例会最像：</div>
+                    
+                    <h2 class="text-2xl font-black mb-0.5">{{ matchedCharacter.title }}</h2>
                     <h3 class="text-lg font-bold mb-3 opacity-90">—— {{ matchedCharacter.name }} ——</h3>
                     <div class="w-28 h-28 mx-auto rounded-full border-2 border-white shadow-xl overflow-hidden bg-white mb-3">
                         <img :src="matchedCharacter.img" alt="角色图片" class="w-full h-full object-cover">
@@ -120,6 +123,15 @@
                 </div>
 
                 <div class="px-4 pt-4">
+                    <!-- 新增的雷达图标题 -->
+                    <div class="text-center mb-1">
+                        <h4 class="text-sm font-bold text-gray-700 flex items-center justify-center tracking-widest">
+                            <span class="text-red-600 mr-2 text-xs">◆</span> 
+                            你的六维行事风格雷达图
+                            <span class="text-red-600 ml-2 text-xs">◆</span>
+                        </h4>
+                    </div>
+
                     <div class="w-full max-w-xs mx-auto mb-4 relative">
                         <canvas id="radarChart"></canvas>
                     </div>
